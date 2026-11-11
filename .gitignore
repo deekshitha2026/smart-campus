@@ -1,0 +1,7 @@
+attendance.db
+__pycache__/
+*.pyc
+.env
+venv/
+create_admin.py
+reset_password.py

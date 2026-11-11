@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Notifications</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>My Notifications</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Student Dashboard</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Notifications & Announcements</h2>
+
+    {% for notification in notifications %}
+
+    <div style="background: #f2f6ff; padding: 18px; margin: 15px 0; border-radius: 10px;">
+
+        <h3>{{ notification[0] }}</h3>
+
+        <p>{{ notification[1] }}</p>
+
+        <small>Received: {{ notification[2] }}</small>
+
+    </div>
+
+    {% else %}
+
+    <p>No notifications available yet.</p>
+
+    {% endfor %}
+
+</section>
+
+</body>
+</html>

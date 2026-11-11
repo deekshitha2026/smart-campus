@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Marks Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Student Marks Management</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Add or Update Student Marks</h2>
+
+    <form method="POST">
+
+        <label>Select Student</label>
+        <select name="student_id" required>
+            {% for student in students %}
+            <option value="{{ student[0] }}">{{ student[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Subject</label>
+        <input type="text" name="subject" required>
+
+        <br><br>
+
+        <label>Exam Name</label>
+        <input type="text" name="exam_name" required>
+
+        <br><br>
+
+        <label>Marks Obtained</label>
+        <input type="number" name="marks" min="0" step="0.01" required>
+
+        <br><br>
+
+        <label>Maximum Marks</label>
+        <input type="number" name="max_marks" min="0.01" step="0.01" required>
+
+        <br><br>
+
+        <button type="submit">Save Marks</button>
+
+    </form>
+
+    <hr>
+
+    <h2>Saved Student Marks</h2>
+
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Student Name</th>
+            <th>Subject</th>
+            <th>Exam</th>
+            <th>Marks Obtained</th>
+            <th>Maximum Marks</th>
+            <th>Percentage</th>
+            <th>Action</th>
+        </tr>
+
+        {% for mark in saved_marks %}
+        <tr>
+            <td>{{ mark[0] }}</td>
+            <td>{{ mark[1] }}</td>
+            <td>{{ mark[2] }}</td>
+            <td>{{ mark[3] }}</td>
+            <td>{{ mark[4] }}</td>
+            <td>{{ "%.2f"|format((mark[3] / mark[4]) * 100) }}%</td>
+
+            <td>
+
+                <!-- EDIT FORM -->
+                <form method="POST" action="/teacher-marks">
+
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="mark_id" value="{{ mark[5] }}">
+
+                    <label>Student</label>
+                    <select name="student_id" required>
+                        {% for student in students %}
+                        <option value="{{ student[0] }}"
+                            {% if student[1] == mark[0] %}selected{% endif %}>
+                            {{ student[1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="text" name="subject"
+                           value="{{ mark[1] }}" required>
+
+                    <input type="text" name="exam_name"
+                           value="{{ mark[2] }}" required>
+
+                    <input type="number" name="marks"
+                           value="{{ mark[3] }}" min="0" step="0.01" required>
+
+                    <input type="number" name="max_marks"
+                           value="{{ mark[4] }}" min="0.01" step="0.01" required>
+
+                    <button type="submit">Edit / Save</button>
+
+                </form>
+
+                <br>
+
+                <!-- DELETE FORM -->
+                <form method="POST" action="/teacher-marks">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="mark_id" value="{{ mark[5] }}">
+
+                    <button type="submit"
+                        onclick="return confirm('Are you sure you want to delete these marks?')">
+                        Delete
+                    </button>
+                </form>
+
+            </td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td colspan="7">No marks added yet.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</section>
+
+</body>
+</html>

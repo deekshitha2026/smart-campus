@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Marks - Smart Campus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>My Marks</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Student Dashboard</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>My Examination Results</h2>
+
+    <!-- Download PDF Button -->
+    <div style="text-align: right; margin: 20px;">
+        <a href="/download-my-marks" class="btn">
+            Download Marks Report (PDF)
+        </a>
+    </div>
+
+    <!-- Marks Summary Cards -->
+    <section class="cards">
+
+        <div class="card">
+            <h3>Total Marks</h3>
+            <h2>{{ total_obtained }} / {{ total_maximum }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Overall Percentage</h3>
+            <h2>{{ overall_percentage }}%</h2>
+        </div>
+
+        <div class="card">
+            <h3>Highest Scoring Subject</h3>
+            <h2>{{ highest_subject }}</h2>
+        </div>
+
+    </section>
+
+    <br>
+
+    <!-- Marks Performance Chart -->
+    <h2>Marks Performance Chart</h2>
+
+    <div style="width: 100%; max-width: 900px; height: 350px; margin: 20px auto;">
+        <canvas id="marksChart"></canvas>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+
+    <script>
+    const chartLabels = {{ chart_labels | tojson }};
+    const chartPercentages = {{ chart_percentages | tojson }};
+
+    new Chart(document.getElementById("marksChart"), {
+        type: "bar",
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: "Marks Percentage",
+                data: chartPercentages,
+                backgroundColor: "#6f42c1",
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: "Percentage"
+                    }
+                }
+            }
+        }
+    });
+    </script>
+
+    <br>
+
+    <!-- Subject-wise Marks Table -->
+    <h2>Subject-wise Marks</h2>
+
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Subject</th>
+            <th>Exam</th>
+            <th>Marks Obtained</th>
+            <th>Maximum Marks</th>
+            <th>Percentage</th>
+        </tr>
+
+        {% for mark in marks %}
+        <tr>
+            <td>{{ mark[0] }}</td>
+            <td>{{ mark[1] }}</td>
+            <td>{{ mark[2] }}</td>
+            <td>{{ mark[3] }}</td>
+            <td>{{ "%.2f"|format((mark[2] / mark[3]) * 100) }}%</td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td colspan="5">No marks available yet.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</section>
+
+</body>
+</html>

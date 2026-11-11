@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Student Details</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/student-progress-report">Progress Report</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Student Information</h2>
+
+    <p><strong>Student ID:</strong> {{ student[0] }}</p>
+    <p><strong>Name:</strong> {{ student[1] }}</p>
+    <p><strong>Email:</strong> {{ student[2] }}</p>
+
+</section>
+
+<section class="welcome">
+
+    <h2>Attendance History</h2>
+
+    <table border="1" cellpadding="10" width="100%">
+        <tr>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+
+        {% for record in attendance_records %}
+        <tr>
+            <td>{{ record[0] }}</td>
+            <td>{{ record[1] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="2">No attendance records found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</section>
+
+<section class="welcome">
+
+    <h2>Activity History</h2>
+
+    <table border="1" cellpadding="10" width="100%">
+        <tr>
+            <th>Activity Name</th>
+            <th>Category</th>
+            <th>Status</th>
+        </tr>
+
+        {% for activity in activity_records %}
+        <tr>
+            <td>{{ activity[0] }}</td>
+            <td>{{ activity[1] }}</td>
+            <td>{{ activity[2] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3">No activities found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Curriculum Activities</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Curriculum Activities</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Student Dashboard</a>
+    <a href="/teacher">Teacher Dashboard</a>
+</nav>
+
+{% with messages = get_flashed_messages() %}
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+{% endwith %}
+
+{% if role == 'teacher' %}
+<section class="welcome">
+    <h2>Add New Activity</h2>
+
+    <form method="POST">
+
+        <label>Activity Category:</label>
+        <br><br>
+
+        <select name="category" required>
+            <option value="Assignment">Assignment</option>
+            <option value="Seminar">Seminar</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Mini Project">Mini Project</option>
+            <option value="Hackathon">Hackathon</option>
+            <option value="Online Certification">Online Certification</option>
+            <option value="Industrial Visit">Industrial Visit</option>
+            <option value="Poster Presentation">Poster Presentation</option>
+            <option value="Sports and Cultural Events">Sports and Cultural Events</option>
+        </select>
+
+        <br><br>
+
+        <input type="text" name="title"
+               placeholder="Enter activity title" required>
+        <br><br>
+
+        <textarea name="description"
+                  placeholder="Enter activity description" required></textarea>
+        <br><br>
+
+        <button type="submit">Add Activity</button>
+
+    </form>
+</section>
+{% endif %}
+
+<section class="welcome">
+    <h2>Available Activities</h2>
+
+    <section class="cards">
+
+        {% for activity in activities %}
+        <div class="card">
+
+            <h3>{{ activity[1] }}</h3>
+            <p>Category: {{ activity[3] }}</p>
+            <p>{{ activity[2] }}</p>
+            <p>Status: {{ activity[4] }}</p>
+
+            {% if role == 'student' %}
+
+                {% if activity[4] != "Completed" %}
+                <form action="{{ url_for('complete_student_activity', activity_id=activity[0]) }}" method="POST">
+                    <button type="submit">Mark as Completed</button>
+                </form>
+                {% endif %}
+
+            {% elif role == 'teacher' %}
+
+                <form action="{{ url_for('delete_activity', activity_id=activity[0]) }}" method="POST">
+                    <button type="submit">Delete Activity</button>
+                </form>
+
+            {% endif %}
+
+        </div>
+        {% else %}
+            <p>No activities available.</p>
+        {% endfor %}
+
+    </section>
+</section>
+
+</body>
+</html>

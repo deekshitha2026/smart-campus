@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Attendance - Smart Campus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Smart Campus</h1>
+    <h2>Admin - All Attendance Records</h2>
+
+    <nav>
+        <a href="/">Home</a> |
+        <a href="/admin">Admin Dashboard</a> |
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <h2>Student Attendance Details</h2>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Student Name</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+
+        {% for record in attendance_records %}
+        <tr>
+            <td>{{ record[0] }}</td>
+            <td>{{ record[1] }}</td>
+            <td>{{ record[2] }}</td>
+            <td>{{ record[3] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4">No attendance records found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p>Total Attendance Records: {{ attendance_records|length }}</p>
+
+</div>
+
+</body>
+</html>

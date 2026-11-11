@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Performance Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+    <style>
+        .chart-box {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 12px;
+            max-width: 950px;
+            height: 350px;
+        }
+
+        .chart-box canvas {
+            width: 100% !important;
+            height: 280px !important;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Student Performance Analytics</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/student-progress-report">Progress Report</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome chart-box">
+    <h2>Student Attendance Comparison</h2>
+    <canvas id="attendanceChart"></canvas>
+</section>
+
+<section class="welcome chart-box">
+    <h2>Student Activity Completion</h2>
+    <canvas id="activityChart"></canvas>
+</section>
+
+<section class="welcome chart-box">
+    <h2>Monthly Attendance Analysis</h2>
+    <canvas id="monthlyAttendanceChart"></canvas>
+</section>
+
+<p id="chartError" style="text-align:center;color:red;"></p>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof Chart === "undefined") {
+        document.getElementById("chartError").innerText =
+            "Chart.js could not load. Check your internet connection and refresh.";
+        return;
+    }
+
+    const studentNames = {{ student_names | tojson }};
+    const attendanceData = {{ attendance_percentages | tojson }};
+    const completedData = {{ completed_activities | tojson }};
+    const pendingData = {{ pending_activities | tojson }};
+    const monthlyLabels = {{ monthly_labels | tojson }};
+    const monthlyPercentages = {{ monthly_percentages | tojson }};
+
+    new Chart(document.getElementById("attendanceChart"), {
+        type: "bar",
+        data: {
+            labels: studentNames,
+            datasets: [{
+                label: "Attendance Percentage",
+                data: attendanceData,
+                backgroundColor: "#007bff"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("activityChart"), {
+        type: "bar",
+        data: {
+            labels: studentNames,
+            datasets: [
+                {
+                    label: "Completed Activities",
+                    data: completedData,
+                    backgroundColor: "#28a745"
+                },
+                {
+                    label: "Pending Activities",
+                    data: pendingData,
+                    backgroundColor: "#ffc107"
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    
+new Chart(document.getElementById("monthlyAttendanceChart"), {
+    type: "line",
+    data: {
+        labels: monthlyLabels,
+        datasets: [{
+            label: "Monthly Attendance Percentage",
+            data: monthlyPercentages,
+            borderColor: "#6f42c1",
+            backgroundColor: "rgba(111, 66, 193, 0.2)",
+            fill: true,
+            tension: 0.3,
+            pointRadius: 8,
+            pointHoverRadius: 12,
+            pointBackgroundColor: "#6f42c1",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+});
+
+</script>
+
+</body>
+</html>

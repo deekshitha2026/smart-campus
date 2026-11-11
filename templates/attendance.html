@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>My Attendance</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Dashboard</a>
+</nav>
+
+
+<section class="welcome">
+    <h2>My Attendance</h2>
+    <p>View your attendance records below.</p>
+
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+</section>
+
+
+<section class="welcome">
+    <h2>Attendance Records</h2>
+
+    {% for record in records %}
+        <p>
+            {{ record[1] }} |
+            {{ record[2] }} |
+            {{ record[3] }}
+        </p>
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endfor %}
+</section>
+
+</body>
+</html>

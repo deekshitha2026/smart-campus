@@ -1,0 +1,233 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f5fa;
+    color: #243b64;
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, #243b64, #4169a8);
+    color: white;
+    text-align: center;
+    padding: 30px 15px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 30px;
+}
+
+header p {
+    margin-bottom: 0;
+}
+
+nav {
+    background: #172b4d;
+    padding: 18px 10px;
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px 18px;
+}
+
+nav a {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    margin: 0;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #ffd166;
+}
+
+.welcome {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+h2 {
+    color: #243b64;
+}
+
+/* General Dashboard Cards */
+.cards,
+.dashboard-cards {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 25px;
+    flex-wrap: wrap;
+    padding: 25px;
+}
+
+/* Admin Quick Links - Three Cards in One Row */
+.admin-quick-links {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 20px;
+    padding: 25px;
+    width: 100%;
+}
+
+.admin-quick-links .card {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Card Design */
+.card {
+    background: white;
+    padding: 25px;
+    width: 250px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card h2 {
+    color: #2878d0;
+}
+
+.btn,
+button {
+    display: inline-block;
+    background: #2878d0;
+    color: white;
+    padding: 12px 22px;
+    text-decoration: none;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn:hover,
+button:hover {
+    background: #172b4d;
+}
+
+form {
+    background: white;
+    max-width: 650px;
+    margin: 25px auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccd5e0;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #2878d0;
+}
+
+table {
+    width: 95%;
+    margin: 25px auto;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+th {
+    background: #243b64;
+    color: white;
+    padding: 14px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e5eaf0;
+    text-align: center;
+}
+
+tr:hover td {
+    background: #f0f5fc;
+}
+
+a {
+    color: #2878d0;
+}
+
+nav a {
+    color: white;
+}
+
+section {
+    padding: 20px;
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    nav a {
+        margin: 6px;
+        font-size: 14px;
+    }
+
+    .cards,
+    .dashboard-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .admin-quick-links {
+        grid-template-columns: 1fr !important;
+    }
+
+    .admin-quick-links .card {
+        width: 90%;
+        margin: auto;
+    }
+
+    .card {
+        width: 90%;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    form {
+        width: 92%;
+    }
+}

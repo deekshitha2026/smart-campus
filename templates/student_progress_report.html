@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Progress Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Student Progress Report</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Individual Student Progress</h2>
+
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Student ID</th>
+            <th>Student Name</th>
+            <th>Total Attendance</th>
+            <th>Present Days</th>
+            <th>Attendance %</th>
+            <th>Total Activities</th>
+            <th>Completed Activities</th>
+            <th>Pending Activities</th>
+            <th>Activity Progress %</th>
+            <th>Action</th>
+        </tr>
+
+        {% for student in students %}
+
+        <tr>
+            <td>{{ student.id }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.total }}</td>
+            <td>{{ student.present }}</td>
+            <td>
+              {{ student.percentage }}%
+
+              <div style="background-color: #e0e0e0;
+                      width: 100%;
+                      height: 15px;
+                      border-radius: 10px;
+                      margin-top: 5px;">
+
+                <div style="background-color: #007bff;
+                    width: {{ student.percentage }}%;
+                    height: 15px;
+                    border-radius: 10px;">
+                </div>
+
+            </div>
+        </td>
+            <td>{{ student.total_activities }}</td>
+            <td>{{ student.completed_activities }}</td>
+            <td>{{ student.pending_activities }}</td>
+            <td>
+              {{ student.activity_percentage }}%
+
+              <div style="background-color: #e0e0e0;
+                    width: 100%;
+                    height: 15px;
+                    border-radius: 10px;
+                    margin-top: 5px;">
+
+                  <div style="background-color: #28a745;
+                      width: {{ student.activity_percentage }}%;
+                      height: 15px;
+                      border-radius: 10px;">
+                  </div>
+
+              </div>
+            </td>
+            <td>
+               <a href="{{ url_for('student_details', student_id=student.id) }}">
+                   View Details
+               </a>
+               <br><br>
+
+               <a href="{{ url_for('download_student_report', student_id=student.id) }}">
+                     Download PDF
+               </a>
+
+            </td>
+         </tr>
+
+        {% else %}
+
+        <tr>
+            <td colspan="10">No students found.</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</section>
+
+</body>
+</html>

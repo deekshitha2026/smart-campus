@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - Smart Campus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Smart Campus</h1>
+    <h2>Admin Dashboard</h2>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/admin">Dashboard</a>
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <h2>Welcome, Admin!</h2>
+    <p>Manage and monitor the Smart Campus system.</p>
+
+    <!-- Three Admin Cards -->
+    <div class="admin-quick-links">
+
+        <div class="card">
+            <h3>Manage Users</h3>
+            <p>View all registered students and teachers.</p>
+            <a href="/admin-users">View All Users</a>
+        </div>
+
+        <div class="card">
+            <h3>All Attendance</h3>
+            <p>View attendance records of all students.</p>
+            <a href="/admin-attendance">View Attendance</a>
+        </div>
+
+        <div class="card">
+            <h3>All Notifications</h3>
+            <p>Monitor announcements sent by teachers.</p>
+            <a href="/admin-notifications">View Notifications</a>
+        </div>
+
+    </div>
+
+    <!-- Dashboard Statistics -->
+    <h2>Dashboard Statistics</h2>
+
+    <div class="dashboard-cards">
+
+        <div class="card">
+            <h3>Total Students</h3>
+            <h2>{{ total_students }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Teachers</h3>
+            <h2>{{ total_teachers }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Attendance Records</h3>
+            <h2>{{ total_attendance }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Activities</h3>
+            <h2>{{ total_activities }}</h2>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

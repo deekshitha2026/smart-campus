@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Attendance Records</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Teacher Attendance Management</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Mark Student Attendance</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+
+        <label>Select Student:</label><br><br>
+
+        <select name="student_id" required>
+            <option value="">Select Student</option>
+            {% for student in students %}
+                <option value="{{ student.id }}">{{ student.name }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Select Date:</label><br><br>
+        <input type="date" name="date" required>
+
+        <br><br>
+
+        <label>Attendance Status:</label><br><br>
+
+        <select name="status" required>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+        </select>
+
+        <br><br>
+
+        <button type="submit">Save Attendance</button>
+
+    </form>
+
+</section>
+
+<section class="welcome">
+
+    <h2>All Student Attendance Records</h2>
+
+    <table border="1" cellpadding="12" cellspacing="0" width="100%">
+        <tr>
+            <th>Student ID</th>
+            <th>Student Name</th>
+            <th>Total Days</th>
+            <th>Present Days</th>
+            <th>Attendance Percentage</th>
+        </tr>
+
+        {% for student in students %}
+        <tr>
+            <td>{{ student.id }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.total }}</td>
+            <td>{{ student.present }}</td>
+            <td>{{ student.percentage }}%</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No students found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</section>
+
+<section class="welcome">
+
+    <h2>Edit / Delete Attendance Records</h2>
+
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Student Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        {% for record in attendance_records %}
+
+        <tr>
+            <td>{{ record[1] }}</td>
+            <td>{{ record[2] }}</td>
+            <td>{{ record[3] }}</td>
+
+            <td>
+
+                <form method="POST" action="/teacher-attendance">
+
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="attendance_id" value="{{ record[0] }}">
+
+                    <select name="student_id" required>
+                        {% for student in students %}
+                        <option value="{{ student.id }}"
+                            {% if student.name == record[1] %}selected{% endif %}>
+                            {{ student.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="date" name="date" value="{{ record[2] }}" required>
+
+                    <select name="status" required>
+                        <option value="Present" {% if record[3] == "Present" %}selected{% endif %}>Present</option>
+                        <option value="Absent" {% if record[3] == "Absent" %}selected{% endif %}>Absent</option>
+                    </select>
+
+                    <button type="submit">Edit / Save</button>
+
+                </form>
+
+                <br>
+
+                <form method="POST" action="/teacher-attendance">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="attendance_id" value="{{ record[0] }}">
+
+                    <button type="submit"
+                        onclick="return confirm('Are you sure you want to delete this attendance record?')">
+                        Delete
+                    </button>
+                </form>
+
+            </td>
+        </tr>
+
+        {% else %}
+        <tr>
+            <td colspan="4">No attendance records found.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</section>
+
+</body>
+</html>

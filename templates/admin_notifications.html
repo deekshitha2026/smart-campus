@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Notifications - Smart Campus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Smart Campus</h1>
+    <h2>Admin - All Notifications</h2>
+
+    <nav>
+        <a href="/">Home</a> |
+        <a href="/admin">Admin Dashboard</a> |
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <h2>Teacher Announcements</h2>
+
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Teacher</th>
+            <th>Recipient</th>
+            <th>Date</th>
+        </tr>
+
+        {% for notification in notifications %}
+        <tr>
+            <td>{{ notification[0] }}</td>
+            <td>{{ notification[1] }}</td>
+            <td>{{ notification[3] or 'Unknown' }}</td>
+            <td>{{ notification[4] or 'Student account deleted' }}</td>
+            <td>{{ notification[2] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No notifications found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p>Total Notifications: {{ notifications|length }}</p>
+
+</div>
+
+</body>
+</html>

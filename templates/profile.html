@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Student Profile</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Dashboard</a>
+</nav>
+
+<section class="welcome">
+    <h2>My Personal Details</h2>
+
+    <div class="card">
+        <h3>Student Information</h3>
+
+        <p><b>Student ID:</b> {{ student[0] }}</p>
+        <p><b>Student Name:</b> {{ student[1] }}</p>
+        <p><b>Email:</b> {{ student[2] }}</p>
+    </div>
+</section>
+
+</body>
+</html>

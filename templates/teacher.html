@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Teacher Dashboard</h1>
+    <p>Welcome to Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Dashboard</a>
+    <a href="/students">View Students</a>
+    <a href="/teacher-attendance">Manage Attendance</a>
+    <a href="/activities">Manage Activities</a>
+    <a href="/student-progress-report">Student Progress</a>
+    <a href="/teacher-analytics">Performance Analytics</a>
+    <a href="/teacher-marks">Manage Student Marks</a>
+    <a href="/date-wise-attendance">Date-wise Attendance</a>
+    <a href="/teacher-notifications">Notifications</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+    <h2>Welcome, Teacher!</h2>
+    <p>Manage students, attendance and curriculum activities.</p>
+</section>
+
+<section class="cards">
+
+    <div class="card">
+        <h3>View Students</h3>
+        <p>View registered student details.</p>
+        <a href="/students">Open Students</a>
+    </div>
+
+    <div class="card">
+        <h3>Manage Attendance</h3>
+        <p>View all student attendance records.</p>
+        <a href="/teacher-attendance">View Attendance Records</a>
+    </div>
+
+    <div class="card">
+        <h3>Manage Activities</h3>
+        <p>View curriculum activities.</p>
+        <a href="/activities">Open Activities</a>
+    </div>
+
+    <div class="card">
+        <h3>Student Progress</h3>
+        <p>View student academic progress.</p>
+        <a href="/student-progress-report">View Progress</a>
+    </div>
+
+    <div class="card">
+        <h3>Manage Student Marks</h3>
+        <p>Add and update student examination marks.</p>
+        <a href="/teacher-marks">Open Marks Management</a>
+    </div>
+
+    <div class="card">
+        <h3>Student Notifications</h3>
+        <p>Send announcements to individual students or all students.</p>
+        <a href="/teacher-notifications">Send Notifications</a>
+    </div>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Student Dashboard</h1>
+    <p>Welcome to Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Dashboard</a>
+    <a href="/profile">My Profile</a>
+    <a href="/my-marks">My Marks</a>
+    <a href="/my-notifications">My Notifications</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+    <h2>Welcome, Student!</h2>
+    <p>Manage your attendance and curriculum activities here.</p>
+</section>
+
+<section class="cards">
+
+    <div class="card">
+        <h3>My Attendance</h3>
+        <p>View your daily attendance.</p>
+        <a href="/attendance">Open Attendance</a>
+    </div>
+
+    <div class="card">
+        <h3>Curriculum Activities</h3>
+        <p>View assignments and activities.</p>
+        <a href="/activities">Open Activities</a>
+    </div>
+
+    <div class="card">
+        <h3>My Progress</h3>
+        <p>Check your academic progress.</p>
+        <a href="/progress">View Progress</a>
+    </div>
+
+    <div class="card">
+        <h3>My Marks</h3>
+        <p>View your subject-wise examination marks and percentages.</p>
+        <a href="/my-marks">View My Marks</a>
+    </div>
+
+    <div class="card">
+        <h3>My Notifications</h3>
+        <p>Read announcements and messages sent by teachers.</p>
+        <a href="/my-notifications">View Notifications</a>
+    </div>
+
+</section>
+
+</body>
+</html>

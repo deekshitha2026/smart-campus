@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Notifications</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Student Notifications</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Send Notification</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+
+        <label>Select Recipient</label><br><br>
+
+        <select name="student_id" required>
+            <option value="all">All Students</option>
+
+            {% for student in students %}
+                <option value="{{ student[0] }}">
+                    {{ student[1] }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Notification Title</label><br><br>
+        <input type="text" name="title" required>
+
+        <br><br>
+
+        <label>Notification Message</label><br><br>
+        <textarea name="message" rows="5" required></textarea>
+
+        <br><br>
+
+        <button type="submit">Send Notification</button>
+
+    </form>
+
+</section>
+
+<section class="welcome">
+
+    <h2>Sent Notifications</h2>
+
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Recipient</th>
+            <th>Date</th>
+        </tr>
+
+        {% for notification in notifications %}
+        <tr>
+            <td>{{ notification[1] }}</td>
+            <td>{{ notification[2] }}</td>
+            <td>{{ notification[4] }}</td>
+            <td>{{ notification[3] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4">No notifications sent yet.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</section>
+
+</body>
+</html>

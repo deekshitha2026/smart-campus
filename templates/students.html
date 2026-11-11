@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registered Students</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Registered Students</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+</nav>
+
+<section class="welcome">
+    <h2>Student Details</h2>
+
+
+    <table border="1" cellpadding="12" cellspacing="0" width="100%">
+    <tr>
+        <th>Student ID</th>
+        <th>Student Name</th>
+        <th>Email</th>
+    </tr>
+
+    {% for student in students %}
+    <tr>
+        <td>{{ student[0] }}</td>
+        <td>{{ student[1] }}</td>
+        <td>{{ student[2] }}</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="3">No registered students found.</td>
+    </tr>
+    {% endfor %}
+</table>
+</table>
+</section>
+
+</body>
+</html>

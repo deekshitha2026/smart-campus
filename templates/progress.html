@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Progress</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>My Academic Progress</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/student">Dashboard</a>
+</nav>
+
+<section class="welcome">
+    <h2>Progress Overview</h2>
+</section>
+
+<section class="cards">
+
+    <div class="card">
+        <h3>Total Activities</h3>
+        <h2>{{ total_activities }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Completed Activities</h3>
+        <h2>{{ completed_activities }}</h2>
+    </div>
+
+    <div class="card">
+        <h3>Pending Activities</h3>
+        <h2>{{ pending_activities }}</h2>
+    </div>
+
+</section>
+<section class="welcome">
+    <h2>My Attendance Summary</h2>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Total Attendance Days</h3>
+            <h2>{{ total_days }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Present Days</h3>
+            <h2>{{ present_days }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Attendance Percentage</h3>
+            <h2>{{ percentage }}%</h2>
+            <div style="background-color: #ddd; width: 100%; height: 20px; border-radius: 10px;">
+              <div style="background-color: #28a745;
+                width: {{ percentage }}%;
+                height: 20px;
+                border-radius: 10px;">
+              </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="welcome">
+    <h2>Overall Activity Progress</h2>
+
+    <h1>{{ activity_percentage }}%</h1>
+
+    <div style="background-color: #ddd; width: 100%; height: 20px; border-radius: 10px;">
+        <div style="background-color: #28a745;
+                    width: {{ activity_percentage }}%;
+                    height: 20px;
+                    border-radius: 10px;">
+        </div>
+    </div>
+
+    <p>Keep working hard to complete your activities!</p>
+</section>
+
+</body>
+</html>
