@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Attendance</title>
+    <title>My Subject-wise Attendance</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -15,33 +15,86 @@
 <nav>
     <a href="/">Home</a>
     <a href="/student">Dashboard</a>
+    <a href="/logout">Logout</a>
 </nav>
 
-
 <section class="welcome">
-    <h2>My Attendance</h2>
-    <p>View your attendance records below.</p>
 
-    {% with messages = get_flashed_messages() %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endwith %}
+    <h2>Overall Cumulative Attendance</h2>
+
+    <h1>{{ overall_percentage }}%</h1>
+
+    <p>Present Classes: {{ present_classes }}</p>
+    <p>Total Classes: {{ total_classes }}</p>
+
 </section>
 
+<section class="welcome">
+
+    <h2>Subject-wise Attendance</h2>
+
+    <table border="1" cellpadding="12" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Subject</th>
+            <th>Total Classes</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Percentage</th>
+        </tr>
+
+        {% for item in subject_summary %}
+
+        <tr>
+            <td>{{ item.subject }}</td>
+            <td>{{ item.total }}</td>
+            <td>{{ item.present }}</td>
+            <td>{{ item.absent }}</td>
+            <td>{{ item.percentage }}%</td>
+        </tr>
+
+        {% else %}
+
+        <tr>
+            <td colspan="5">No subject attendance found.</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</section>
 
 <section class="welcome">
-    <h2>Attendance Records</h2>
 
-    {% for record in records %}
-        <p>
-            {{ record[1] }} |
-            {{ record[2] }} |
-            {{ record[3] }}
-        </p>
-    {% else %}
-        <p>No attendance records found.</p>
-    {% endfor %}
+    <h2>Attendance History</h2>
+
+    <table border="1" cellpadding="12" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Date</th>
+            <th>Subject</th>
+            <th>Status</th>
+        </tr>
+
+        {% for record in records %}
+
+        <tr>
+            <td>{{ record[0] }}</td>
+            <td>{{ record[1] }}</td>
+            <td>{{ record[2] }}</td>
+        </tr>
+
+        {% else %}
+
+        <tr>
+            <td colspan="3">No attendance records found.</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
 </section>
 
 </body>

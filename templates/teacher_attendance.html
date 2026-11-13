@@ -15,12 +15,13 @@
 <nav>
     <a href="/">Home</a>
     <a href="/teacher">Teacher Dashboard</a>
+    <a href="/manage-subjects">Manage Subjects</a>
     <a href="/logout">Logout</a>
 </nav>
 
 <section class="welcome">
 
-    <h2>Mark Student Attendance</h2>
+    <h2>Mark Subject-wise Attendance</h2>
 
     {% with messages = get_flashed_messages() %}
         {% for message in messages %}
@@ -28,7 +29,22 @@
         {% endfor %}
     {% endwith %}
 
+    <p><a href="/manage-subjects">Add or View Subjects</a></p>
+
+    {% if subjects %}
+
     <form method="POST">
+
+        <label>Select Subject:</label><br><br>
+
+        <select name="subject_id" required>
+            <option value="">Select Subject</option>
+            {% for subject in subjects %}
+                <option value="{{ subject[0] }}">{{ subject[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
 
         <label>Select Student:</label><br><br>
 
@@ -59,19 +75,26 @@
 
     </form>
 
+    {% else %}
+
+        <p>Please add a subject before marking attendance.</p>
+
+    {% endif %}
+
 </section>
 
 <section class="welcome">
 
-    <h2>All Student Attendance Records</h2>
+    <h2>Student Cumulative Attendance</h2>
 
     <table border="1" cellpadding="12" cellspacing="0" width="100%">
+
         <tr>
             <th>Student ID</th>
             <th>Student Name</th>
-            <th>Total Days</th>
-            <th>Present Days</th>
-            <th>Attendance Percentage</th>
+            <th>Total Classes</th>
+            <th>Present Classes</th>
+            <th>Overall Attendance</th>
         </tr>
 
         {% for student in students %}
@@ -87,6 +110,39 @@
             <td colspan="5">No students found.</td>
         </tr>
         {% endfor %}
+
+    </table>
+
+</section>
+
+<section class="welcome">
+
+    <h2>Subject-wise Attendance Summary</h2>
+
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Student Name</th>
+            <th>Subject</th>
+            <th>Total Classes</th>
+            <th>Present Classes</th>
+            <th>Attendance Percentage</th>
+        </tr>
+
+        {% for item in subject_summary %}
+        <tr>
+            <td>{{ item.student_name }}</td>
+            <td>{{ item.subject }}</td>
+            <td>{{ item.total }}</td>
+            <td>{{ item.present }}</td>
+            <td>{{ item.percentage }}%</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No subject records found.</td>
+        </tr>
+        {% endfor %}
+
     </table>
 
 </section>
@@ -99,6 +155,7 @@
 
         <tr>
             <th>Student Name</th>
+            <th>Subject</th>
             <th>Date</th>
             <th>Status</th>
             <th>Action</th>
@@ -108,6 +165,7 @@
 
         <tr>
             <td>{{ record[1] }}</td>
+            <td>{{ record[5] }}</td>
             <td>{{ record[2] }}</td>
             <td>{{ record[3] }}</td>
 
@@ -127,12 +185,30 @@
                         {% endfor %}
                     </select>
 
+                    <br><br>
+
+                    <select name="subject_id" required>
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject[0] }}"
+                            {% if subject[0] == record[4] %}selected{% endif %}>
+                            {{ subject[1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <br><br>
+
                     <input type="date" name="date" value="{{ record[2] }}" required>
+
+                    <br><br>
 
                     <select name="status" required>
                         <option value="Present" {% if record[3] == "Present" %}selected{% endif %}>Present</option>
                         <option value="Absent" {% if record[3] == "Absent" %}selected{% endif %}>Absent</option>
                     </select>
+
+                    <br><br>
 
                     <button type="submit">Edit / Save</button>
 
@@ -155,7 +231,7 @@
 
         {% else %}
         <tr>
-            <td colspan="4">No attendance records found.</td>
+            <td colspan="5">No attendance records found.</td>
         </tr>
         {% endfor %}
 

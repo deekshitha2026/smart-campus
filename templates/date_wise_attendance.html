@@ -7,7 +7,10 @@
 </head>
 <body>
 
-    <h1>Date-wise Attendance Report</h1>
+    <header>
+        <h1>Date-wise Attendance Report</h1>
+        <p>Smart Campus</p>
+    </header>
 
     <nav>
         <a href="/">Home</a>
@@ -16,62 +19,79 @@
         <a href="/logout">Logout</a>
     </nav>
 
-    <h2>Select Attendance Date</h2>
+    <section class="welcome">
 
-    <form method="GET" action="/date-wise-attendance">
-        <input type="date" name="date"
-               value="{{ selected_date }}" required>
+        <h2>Select Attendance Date</h2>
 
-        <button type="submit">View Attendance</button>
-    </form>
+        <form method="GET" action="/date-wise-attendance">
+            <input type="date" name="date"
+                   value="{{ selected_date }}" required>
+
+            <button type="submit">View Attendance</button>
+        </form>
+
+    </section>
 
     {% if selected_date %}
 
+    <section class="welcome">
+
         <h2>Attendance for {{ selected_date }}</h2>
+
         <a href="{{ url_for('download_date_attendance', date=selected_date) }}">
-           <button type="button">Download Attendance PDF</button>
+            <button type="button">Download Attendance PDF</button>
         </a>
 
         <div class="dashboard-cards">
 
-           <div class="card">
-              <h3>Total Students</h3>
-              <h2>{{ total_students }}</h2>
-          </div>
+            <div class="card">
+                <h3>Total Records</h3>
+                <h2>{{ total_students }}</h2>
+            </div>
 
-           <div class="card">
-               <h3>Present Students</h3>
-               <h2>{{ total_present }}</h2>
-           </div>
+            <div class="card">
+                <h3>Present Records</h3>
+                <h2>{{ total_present }}</h2>
+            </div>
 
-           <div class="card">
-              <h3>Absent Students</h3>
-              <h2>{{ total_absent }}</h2>
-           </div>
+            <div class="card">
+                <h3>Absent Records</h3>
+                <h2>{{ total_absent }}</h2>
+            </div>
 
-           <div class="card">
-              <h3>Attendance Percentage</h3>
-              <h2>{{ attendance_percentage }}%</h2>
-           </div>
+            <div class="card">
+                <h3>Attendance Percentage</h3>
+                <h2>{{ attendance_percentage }}%</h2>
+            </div>
 
-       </div>
+        </div>
 
+    </section>
+
+    <section class="welcome">
+
+        <h2>Attendance Records</h2>
 
         {% if records %}
 
-        <table border="1" cellpadding="10">
+        <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
             <tr>
                 <th>Student Name</th>
+                <th>Subject</th>
                 <th>Date</th>
                 <th>Status</th>
             </tr>
 
             {% for record in records %}
+
             <tr>
                 <td>{{ record[0] }}</td>
+                <td>{{ record[3] }}</td>
                 <td>{{ record[1] }}</td>
                 <td>{{ record[2] }}</td>
             </tr>
+
             {% endfor %}
 
         </table>
@@ -81,6 +101,8 @@
         <p>No attendance records found for this date.</p>
 
         {% endif %}
+
+    </section>
 
     {% endif %}
 

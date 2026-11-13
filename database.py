@@ -26,6 +26,17 @@ def create_database():
             ADD COLUMN role TEXT NOT NULL DEFAULT 'student'
         """)
 
+    # Subjects table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS subjects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject_name TEXT NOT NULL,
+            teacher_id INTEGER NOT NULL,
+            FOREIGN KEY (teacher_id) REFERENCES users(id),
+            UNIQUE (subject_name, teacher_id)
+        )
+    """)
+
     # Attendance table
     conn.execute("""
         CREATE TABLE IF NOT EXISTS attendance (
@@ -35,6 +46,18 @@ def create_database():
             status TEXT NOT NULL
         )
     """)
+
+    # Add subject_id to existing attendance table
+    columns = [
+        column[1]
+        for column in conn.execute("PRAGMA table_info(attendance)").fetchall()
+    ]
+
+    if "subject_id" not in columns:
+        conn.execute("""
+            ALTER TABLE attendance
+            ADD COLUMN subject_id INTEGER REFERENCES subjects(id)
+        """)
 
     # Activities table
     conn.execute("""
@@ -99,6 +122,17 @@ def create_database():
             FOREIGN KEY (student_id) REFERENCES users(id),
             FOREIGN KEY (teacher_id) REFERENCES users(id)
         )
+    """)
+
+    # Attendance index
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_attendance_subject
+        ON attendance(subject_id)
+    """)
+    conn.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_student_subject_date
+        ON attendance(student_name, subject_id, date)
+        WHERE subject_id IS NOT NULL
     """)
 
     conn.commit()

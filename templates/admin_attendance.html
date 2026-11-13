@@ -20,26 +20,34 @@
 
     <h2>Student Attendance Details</h2>
 
-    <table>
+    <table border="1" cellpadding="10" cellspacing="0" width="100%">
+
         <tr>
             <th>ID</th>
             <th>Student Name</th>
+            <th>Subject</th>
             <th>Date</th>
             <th>Status</th>
         </tr>
 
         {% for record in attendance_records %}
+
         <tr>
             <td>{{ record[0] }}</td>
             <td>{{ record[1] }}</td>
+            <td>{{ record[4] }}</td>
             <td>{{ record[2] }}</td>
             <td>{{ record[3] }}</td>
         </tr>
+
         {% else %}
+
         <tr>
-            <td colspan="4">No attendance records found.</td>
+            <td colspan="5">No attendance records found.</td>
         </tr>
+
         {% endfor %}
+
     </table>
 
     <p>Total Attendance Records: {{ attendance_records|length }}</p>

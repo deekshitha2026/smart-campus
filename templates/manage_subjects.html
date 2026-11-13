@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Subjects</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <h1>Manage Subjects</h1>
+    <p>Smart Campus</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/teacher">Teacher Dashboard</a>
+    <a href="/teacher-attendance">Manage Attendance</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<section class="welcome">
+
+    <h2>Add New Subject</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+
+        <label>Subject Name:</label><br><br>
+
+        <input
+            type="text"
+            name="subject_name"
+            placeholder="Enter subject name"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">Add Subject</button>
+
+    </form>
+
+</section>
+
+<section class="welcome">
+
+    <h2>My Subjects</h2>
+
+    <table border="1" cellpadding="12" cellspacing="0" width="100%">
+
+        <tr>
+            <th>Subject ID</th>
+            <th>Subject Name</th>
+        </tr>
+
+        {% for subject in subjects %}
+        <tr>
+            <td>{{ subject[0] }}</td>
+            <td>{{ subject[1] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="2">No subjects added yet.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</section>
+
+</body>
+</html>

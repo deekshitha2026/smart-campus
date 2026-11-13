@@ -192,10 +192,10 @@ def attendance():
 
     conn = sqlite3.connect("attendance.db")
 
-    student = conn.execute(
-        "SELECT name FROM users WHERE id = ? AND role = 'student'",
-        (session["user_id"],)
-    ).fetchone()
+    student = conn.execute("""
+        SELECT name FROM users
+        WHERE id = ? AND role = 'student'
+    """, (session["user_id"],)).fetchone()
 
     if not student:
         conn.close()
@@ -204,20 +204,87 @@ def attendance():
 
     student_name = student[0]
 
-    records = conn.execute(
-        """
-        SELECT * FROM attendance
+    # SUBJECT-WISE ATTENDANCE
+    subject_summary = conn.execute("""
+        SELECT
+            subjects.subject_name,
+            COUNT(attendance.id),
+            COALESCE(SUM(
+                CASE WHEN attendance.status = 'Present'
+                THEN 1 ELSE 0 END
+            ), 0)
+        FROM subjects
+        LEFT JOIN attendance
+            ON attendance.subject_id = subjects.id
+            AND attendance.student_name = ?
+        GROUP BY subjects.id, subjects.subject_name
+        ORDER BY subjects.subject_name
+    """, (student_name,)).fetchall()
+
+    # CUMULATIVE ATTENDANCE
+    totals = conn.execute("""
+        SELECT
+            COUNT(*),
+            COALESCE(SUM(
+                CASE WHEN status = 'Present'
+                THEN 1 ELSE 0 END
+            ), 0)
+        FROM attendance
         WHERE student_name = ?
-        ORDER BY date DESC
-        """,
-        (student_name,)
-    ).fetchall()
+        AND subject_id IS NOT NULL
+    """, (student_name,)).fetchone()
+
+    total_classes = totals[0]
+    present_classes = totals[1]
+
+    overall_percentage = 0
+
+    if total_classes > 0:
+        overall_percentage = round(
+            (present_classes / total_classes) * 100, 2
+        )
+
+    # ATTENDANCE RECORDS
+    records = conn.execute("""
+        SELECT
+            attendance.date,
+            COALESCE(subjects.subject_name, 'Not Assigned'),
+            attendance.status
+        FROM attendance
+        LEFT JOIN subjects
+            ON attendance.subject_id = subjects.id
+        WHERE attendance.student_name = ?
+        ORDER BY attendance.date DESC
+    """, (student_name,)).fetchall()
 
     conn.close()
 
+    subject_data = []
+
+    for item in subject_summary:
+        total = item[1]
+        present = item[2]
+
+        percentage = 0
+
+        if total > 0:
+            percentage = round((present / total) * 100, 2)
+
+        subject_data.append({
+            "subject": item[0],
+            "total": total,
+            "present": present,
+            "absent": total - present,
+            "percentage": percentage
+        })
+
     return render_template(
         "attendance.html",
-        records=records
+        records=records,
+        subject_summary=subject_data,
+        total_classes=total_classes,
+        present_classes=present_classes,
+        overall_percentage=overall_percentage
     )
 
 
@@ -510,6 +577,7 @@ def download_student_report(student_id):
     )
 
 
+
 @app.route("/teacher-analytics")
 def teacher_analytics():
 
@@ -529,12 +597,14 @@ def teacher_analytics():
 
             (SELECT COUNT(*)
              FROM attendance
-             WHERE attendance.student_name = users.name),
+             WHERE attendance.student_name = users.name
+             AND attendance.subject_id IS NOT NULL),
 
             (SELECT COUNT(*)
              FROM attendance
              WHERE attendance.student_name = users.name
-             AND attendance.status = 'Present'),
+             AND attendance.status = 'Present'
+             AND attendance.subject_id IS NOT NULL),
 
             (SELECT COUNT(*)
              FROM student_activities
@@ -556,13 +626,10 @@ def teacher_analytics():
             COUNT(*),
             SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END)
         FROM attendance
+        WHERE subject_id IS NOT NULL
         GROUP BY strftime('%Y-%m', date)
         ORDER BY strftime('%Y-%m', date)
     """).fetchall()
-    print("MONTHLY DATA:", monthly_records)
-        
-
-    print("Monthly Records:", monthly_records)
 
     conn.close()
 
@@ -577,39 +644,39 @@ def teacher_analytics():
     for record in monthly_records:
 
         month = record[0]
-        total_days = record[1]
-        present_days = record[2] or 0
+        total_classes = record[1]
+        present_classes = record[2] or 0
 
         percentage = 0
 
-        if total_days > 0:
-            percentage =  min(100,round(
-                (present_days / total_days) * 100, 2
-            ))
+        if total_classes > 0:
+            percentage = round(
+                (present_classes / total_classes) * 100, 2
+            )
 
         monthly_labels.append(month)
         monthly_percentages.append(percentage)
 
     if not monthly_labels:
-       monthly_labels = ["No Attendance Data"]
-       monthly_percentages = [0]
+        monthly_labels = ["No Attendance Data"]
+        monthly_percentages = [0]
+
     for student in students:
 
-        total_days = student[2]
-        present_days = student[3]
+        total_classes = student[2]
+        present_classes = student[3]
         completed = student[4]
 
         attendance_percentage = 0
 
-        if total_days > 0:
+        if total_classes > 0:
             attendance_percentage = round(
-                (present_days / total_days) * 100, 2
+                (present_classes / total_classes) * 100, 2
             )
 
         student_names.append(student[1])
         attendance_percentages.append(attendance_percentage)
         completed_activities.append(completed)
-
         pending_activities.append(
             max(0, total_activities - completed)
         )
@@ -623,6 +690,7 @@ def teacher_analytics():
         monthly_labels=monthly_labels,
         monthly_percentages=monthly_percentages
     )
+
 
 @app.route("/student-details/<int:student_id>")
 def student_details(student_id):
@@ -974,8 +1042,8 @@ def teacher_dashboard():
 
     return render_template("teacher.html")
 
-@app.route("/teacher-attendance", methods=["GET", "POST"])
-def teacher_attendance():
+@app.route("/manage-subjects", methods=["GET", "POST"])
+def manage_subjects():
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -986,37 +1054,115 @@ def teacher_attendance():
 
     conn = sqlite3.connect("attendance.db")
 
+    if request.method == "POST":
+        subject_name = request.form.get("subject_name", "").strip()
+
+        if not subject_name:
+            flash("Please enter a subject name.")
+        else:
+            try:
+                conn.execute("""
+                    INSERT INTO subjects (subject_name, teacher_id)
+                    VALUES (?, ?)
+                """, (subject_name, session["user_id"]))
+
+                conn.commit()
+                flash("Subject added successfully!")
+
+            except sqlite3.IntegrityError:
+                flash("You have already added this subject.")
+
+    subjects = conn.execute("""
+        SELECT id, subject_name
+        FROM subjects
+        WHERE teacher_id = ?
+        ORDER BY subject_name
+    """, (session["user_id"],)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "manage_subjects.html",
+        subjects=subjects
+    )
+
+
+
+
+
+@app.route("/teacher-attendance", methods=["GET", "POST"])
+def teacher_attendance():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") != "teacher":
+        flash("Access denied! Teachers only.")
+        return redirect(url_for("student_dashboard"))
+
+    teacher_id = session["user_id"]
+    conn = sqlite3.connect("attendance.db")
+
+    subjects = conn.execute("""
+        SELECT id, subject_name
+        FROM subjects
+        WHERE teacher_id = ?
+        ORDER BY subject_name
+    """, (teacher_id,)).fetchall()
+
     # EDIT ATTENDANCE
     if request.method == "POST" and request.form.get("action") == "edit":
 
         try:
             attendance_id = int(request.form["attendance_id"])
             student_id = int(request.form["student_id"])
+            subject_id = int(request.form["subject_id"])
             date = request.form["date"]
             status = request.form["status"]
+
+            subject = conn.execute("""
+                SELECT id FROM subjects
+                WHERE id = ? AND teacher_id = ?
+            """, (subject_id, teacher_id)).fetchone()
 
             student = conn.execute("""
                 SELECT name FROM users
                 WHERE id = ? AND role = 'student'
             """, (student_id,)).fetchone()
 
-            if not student or status not in ["Present", "Absent"]:
+            record = conn.execute("""
+                SELECT id FROM attendance
+                WHERE id = ?
+                AND subject_id IN (
+                    SELECT id FROM subjects
+                    WHERE teacher_id = ?
+                )
+            """, (attendance_id, teacher_id)).fetchone()
+
+            if not subject or not student or not record or status not in ["Present", "Absent"] or not date:
                 flash("Invalid attendance details!")
 
             else:
                 existing = conn.execute("""
                     SELECT id FROM attendance
-                    WHERE student_name = ? AND date = ? AND id != ?
-                """, (student[0], date, attendance_id)).fetchone()
+                    WHERE student_name = ?
+                    AND date = ?
+                    AND subject_id = ?
+                    AND id != ?
+                """, (student[0], date, subject_id, attendance_id)).fetchone()
 
                 if existing:
-                    flash("Attendance already exists for this date!")
+                    flash("Attendance already exists for this student, subject and date!")
+
                 else:
                     conn.execute("""
                         UPDATE attendance
-                        SET student_name = ?, date = ?, status = ?
+                        SET student_name = ?,
+                            date = ?,
+                            status = ?,
+                            subject_id = ?
                         WHERE id = ?
-                    """, (student[0], date, status, attendance_id))
+                    """, (student[0], date, status, subject_id, attendance_id))
 
                     conn.commit()
                     flash("Attendance updated successfully!")
@@ -1033,12 +1179,21 @@ def teacher_attendance():
         try:
             attendance_id = int(request.form["attendance_id"])
 
-            conn.execute("""
-                DELETE FROM attendance WHERE id = ?
-            """, (attendance_id,))
+            result = conn.execute("""
+                DELETE FROM attendance
+                WHERE id = ?
+                AND subject_id IN (
+                    SELECT id FROM subjects
+                    WHERE teacher_id = ?
+                )
+            """, (attendance_id, teacher_id))
 
             conn.commit()
-            flash("Attendance deleted successfully!")
+
+            if result.rowcount:
+                flash("Attendance deleted successfully!")
+            else:
+                flash("Attendance record not found or access denied!")
 
         except (ValueError, KeyError):
             flash("Invalid attendance selection!")
@@ -1051,34 +1206,43 @@ def teacher_attendance():
 
         try:
             student_id = int(request.form["student_id"])
+            subject_id = int(request.form["subject_id"])
             date = request.form["date"]
             status = request.form["status"]
 
-            student = conn.execute(
-                "SELECT name FROM users WHERE id = ? AND role = 'student'",
-                (student_id,)
-            ).fetchone()
+            student = conn.execute("""
+                SELECT name FROM users
+                WHERE id = ? AND role = 'student'
+            """, (student_id,)).fetchone()
 
-            if not student or status not in ["Present", "Absent"]:
+            subject = conn.execute("""
+                SELECT id FROM subjects
+                WHERE id = ? AND teacher_id = ?
+            """, (subject_id, teacher_id)).fetchone()
+
+            if not student or not subject or status not in ["Present", "Absent"] or not date:
                 flash("Invalid attendance details!")
 
             else:
                 existing = conn.execute("""
                     SELECT id FROM attendance
-                    WHERE student_name = ? AND date = ?
-                """, (student[0], date)).fetchone()
+                    WHERE student_name = ?
+                    AND date = ?
+                    AND subject_id = ?
+                """, (student[0], date, subject_id)).fetchone()
 
                 if existing:
-                    flash("Attendance already marked for this student on this date!")
+                    flash("Attendance already marked for this student in this subject on this date!")
+
                 else:
                     conn.execute("""
                         INSERT INTO attendance
-                        (student_name, date, status)
-                        VALUES (?, ?, ?)
-                    """, (student[0], date, status))
+                        (student_name, date, status, subject_id)
+                        VALUES (?, ?, ?, ?)
+                    """, (student[0], date, status, subject_id))
 
                     conn.commit()
-                    flash("Student attendance saved successfully!")
+                    flash("Subject-wise attendance saved successfully!")
 
         except (ValueError, KeyError):
             flash("Please enter valid attendance details!")
@@ -1086,38 +1250,69 @@ def teacher_attendance():
         conn.close()
         return redirect(url_for("teacher_attendance"))
 
-    # GET STUDENT ATTENDANCE SUMMARY
+    # STUDENT CUMULATIVE ATTENDANCE
     students = conn.execute("""
         SELECT
             users.id,
             users.name,
             COUNT(attendance.id),
             COALESCE(SUM(
-                CASE WHEN attendance.status = 'Present' THEN 1 ELSE 0 END
+                CASE WHEN attendance.status = 'Present'
+                THEN 1 ELSE 0 END
             ), 0)
         FROM users
         LEFT JOIN attendance
-        ON users.name = attendance.student_name
+            ON users.name = attendance.student_name
+            AND attendance.subject_id IS NOT NULL
         WHERE users.role = 'student'
         GROUP BY users.id, users.name
         ORDER BY users.id
     """).fetchall()
 
-    # GET ALL ATTENDANCE RECORDS
+    # SUBJECT-WISE ATTENDANCE SUMMARY
+    subject_summary = conn.execute("""
+        SELECT
+            users.id,
+            users.name,
+            subjects.subject_name,
+            COUNT(attendance.id),
+            COALESCE(SUM(
+                CASE WHEN attendance.status = 'Present'
+                THEN 1 ELSE 0 END
+            ), 0)
+        FROM users
+        CROSS JOIN subjects
+        LEFT JOIN attendance
+            ON attendance.student_name = users.name
+            AND attendance.subject_id = subjects.id
+        WHERE users.role = 'student'
+        AND subjects.teacher_id = ?
+        GROUP BY users.id, users.name, subjects.id, subjects.subject_name
+        ORDER BY users.name, subjects.subject_name
+    """, (teacher_id,)).fetchall()
+
+    # ONLY THIS TEACHER'S ATTENDANCE RECORDS
     attendance_records = conn.execute("""
-        SELECT attendance.id,
-               attendance.student_name,
-               attendance.date,
-               attendance.status
+        SELECT
+            attendance.id,
+            attendance.student_name,
+            attendance.date,
+            attendance.status,
+            attendance.subject_id,
+            subjects.subject_name
         FROM attendance
+        INNER JOIN subjects
+            ON attendance.subject_id = subjects.id
+        WHERE subjects.teacher_id = ?
         ORDER BY attendance.date DESC, attendance.id DESC
-    """).fetchall()
+    """, (teacher_id,)).fetchall()
 
     conn.close()
 
     student_data = []
 
     for student in students:
+
         total_days = student[2]
         present_days = student[3] or 0
 
@@ -1136,11 +1331,37 @@ def teacher_attendance():
             "percentage": percentage
         })
 
+    subject_data = []
+
+    for record in subject_summary:
+
+        total = record[3]
+        present = record[4]
+
+        percentage = 0
+
+        if total > 0:
+            percentage = round(
+                (present / total) * 100, 2
+            )
+
+        subject_data.append({
+            "student_id": record[0],
+            "student_name": record[1],
+            "subject": record[2],
+            "total": total,
+            "present": present,
+            "percentage": percentage
+        })
+
     return render_template(
         "teacher_attendance.html",
         students=student_data,
+        subjects=subjects,
+        subject_summary=subject_data,
         attendance_records=attendance_records
     )
+
 
 
 
@@ -1167,10 +1388,16 @@ def date_wise_attendance():
         conn = sqlite3.connect("attendance.db")
 
         records = conn.execute("""
-            SELECT student_name, date, status
+            SELECT
+                attendance.student_name,
+                attendance.date,
+                attendance.status,
+                COALESCE(subjects.subject_name, 'Not Assigned')
             FROM attendance
-            WHERE date = ?
-            ORDER BY student_name
+            LEFT JOIN subjects
+                ON attendance.subject_id = subjects.id
+            WHERE attendance.date = ?
+            ORDER BY attendance.student_name, subjects.subject_name
         """, (selected_date,)).fetchall()
 
         total_students = len(records)
@@ -1198,6 +1425,8 @@ def date_wise_attendance():
         total_absent=total_absent,
         attendance_percentage=attendance_percentage
     )
+
+
 @app.route("/download-date-attendance")
 def download_date_attendance():
 
@@ -1216,10 +1445,16 @@ def download_date_attendance():
     conn = sqlite3.connect("attendance.db")
 
     records = conn.execute("""
-        SELECT student_name, date, status
+        SELECT
+            attendance.student_name,
+            COALESCE(subjects.subject_name, 'Not Assigned'),
+            attendance.date,
+            attendance.status
         FROM attendance
-        WHERE date = ?
-        ORDER BY student_name
+        LEFT JOIN subjects
+            ON attendance.subject_id = subjects.id
+        WHERE attendance.date = ?
+        ORDER BY attendance.student_name, subjects.subject_name
     """, (selected_date,)).fetchall()
 
     conn.close()
@@ -1247,18 +1482,18 @@ def download_date_attendance():
     pdf.setStrokeColor(colors.black)
     pdf.line(40, 715, width - 40, 715)
 
-    total_students = len(records)
-    total_present = sum(1 for r in records if r[2] == "Present")
-    total_absent = total_students - total_present
+    total_records = len(records)
+    total_present = sum(1 for r in records if r[3] == "Present")
+    total_absent = total_records - total_present
 
     percentage = round(
-        (total_present / total_students) * 100, 2
-    ) if total_students else 0
+        (total_present / total_records) * 100, 2
+    ) if total_records else 0
 
     pdf.setFont("Helvetica-Bold", 12)
     pdf.drawString(50, 680, f"Attendance Date: {selected_date}")
 
-    pdf.drawString(50, 650, f"Total Students: {total_students}")
+    pdf.drawString(50, 650, f"Total Records: {total_records}")
     pdf.drawString(230, 650, f"Present: {total_present}")
     pdf.drawString(380, 650, f"Absent: {total_absent}")
 
@@ -1271,35 +1506,40 @@ def download_date_attendance():
     pdf.rect(45, y - 8, width - 90, 28, fill=1, stroke=1)
 
     pdf.setFillColor(colors.black)
-    pdf.setFont("Helvetica-Bold", 11)
+    pdf.setFont("Helvetica-Bold", 10)
 
-    pdf.drawString(60, y, "S.No")
-    pdf.drawString(130, y, "Student Name")
-    pdf.drawString(340, y, "Date")
-    pdf.drawString(460, y, "Status")
+    pdf.drawString(55, y, "S.No")
+    pdf.drawString(95, y, "Student Name")
+    pdf.drawString(225, y, "Subject")
+    pdf.drawString(345, y, "Date")
+    pdf.drawString(465, y, "Status")
 
     y -= 28
 
-    pdf.setFont("Helvetica", 10)
+    pdf.setFont("Helvetica", 9)
 
     for i, record in enumerate(records, start=1):
 
         if y < 60:
             pdf.showPage()
             y = 780
-            pdf.setFont("Helvetica", 10)
+            pdf.setFont("Helvetica", 9)
 
         pdf.rect(45, y - 10, width - 90, 25, fill=0, stroke=1)
 
-        pdf.drawString(60, y, str(i))
-        pdf.drawString(130, y, str(record[0])[:30])
-        pdf.drawString(340, y, str(record[1]))
-        pdf.drawString(460, y, str(record[2]))
+        pdf.drawString(55, y, str(i))
+        pdf.drawString(95, y, str(record[0])[:20])
+        pdf.drawString(225, y, str(record[1])[:18])
+        pdf.drawString(345, y, str(record[2]))
+        pdf.drawString(465, y, str(record[3]))
 
         y -= 25
 
     pdf.setFont("Helvetica-Oblique", 9)
-    pdf.drawCentredString(width / 2, 30, "Generated by Smart Campus Attendance System")
+    pdf.drawCentredString(
+        width / 2, 30,
+        "Generated by Smart Campus Attendance System"
+    )
 
     pdf.save()
     pdf_buffer.seek(0)
@@ -1310,6 +1550,7 @@ def download_date_attendance():
         download_name=f"Attendance_Report_{selected_date}.pdf",
         mimetype="application/pdf"
     )
+
 @app.route("/student-progress-report")
 def student_progress_report():
 
@@ -1749,6 +1990,7 @@ def admin_delete_user(user_id):
     return redirect(url_for("admin_users"))
 
 
+
 @app.route("/admin-attendance")
 def admin_attendance():
 
@@ -1762,9 +2004,16 @@ def admin_attendance():
     conn = sqlite3.connect("attendance.db")
 
     attendance_records = conn.execute("""
-        SELECT id, student_name, date, status
+        SELECT
+            attendance.id,
+            attendance.student_name,
+            attendance.date,
+            attendance.status,
+            COALESCE(subjects.subject_name, 'Not Assigned')
         FROM attendance
-        ORDER BY date DESC, id DESC
+        LEFT JOIN subjects
+            ON attendance.subject_id = subjects.id
+        ORDER BY attendance.date DESC, attendance.id DESC
     """).fetchall()
 
     conn.close()
@@ -1773,6 +2022,7 @@ def admin_attendance():
         "admin_attendance.html",
         attendance_records=attendance_records
     )
+
 
 @app.route("/admin-notifications")
 def admin_notifications():
