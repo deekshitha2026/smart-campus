@@ -118,73 +118,7 @@ def register():
 
     return render_template("register.html")
 
-@app.route("/temporary-admin-setup", methods=["GET", "POST"])
-def temporary_admin_setup():
-    setup_token = os.environ.get("ADMIN_SETUP_TOKEN")
 
-    if not setup_token:
-        return "Admin setup is disabled.", 404
-
-    if request.method == "GET":
-        return """
-        <h2>Smart Campus Admin Setup</h2>
-        <form method="POST">
-            <input type="password" name="token" placeholder="Setup Token" required><br><br>
-            <input type="text" name="name" placeholder="Admin Name" required><br><br>
-            <input type="email" name="email" placeholder="Admin Email" required><br><br>
-            <input type="password" name="password" placeholder="New Password" minlength="12" required><br><br>
-            <button type="submit">Create or Reset Admin</button>
-        </form>
-        """
-
-    if not hmac.compare_digest(
-        setup_token, request.form.get("token", "")
-    ):
-        return "Invalid setup token.", 403
-
-    name = request.form.get("name", "").strip()
-    email = request.form.get("email", "").strip().lower()
-    password = request.form.get("password", "")
-
-    if not name or not email or len(password) < 12:
-        return "Enter valid details. Password must have at least 12 characters.", 400
-
-    conn = sqlite3.connect("attendance.db")
-
-    try:
-        user = conn.execute(
-            "SELECT id, role FROM users WHERE email=?", (email,)
-        ).fetchone()
-
-        admin = conn.execute(
-            "SELECT id FROM users WHERE role='admin' LIMIT 1"
-        ).fetchone()
-
-        password_hash = generate_password_hash(password)
-
-        if user:
-            if user[1] != "admin":
-                return "This email belongs to a non-admin account.", 409
-
-            conn.execute(
-                "UPDATE users SET name=?, password=? WHERE id=?",
-                (name, password_hash, user[0])
-            )
-
-        else:
-            if admin:
-                return "An Admin account already exists.", 409
-
-            conn.execute(
-                "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-                (name, email, password_hash, "admin")
-            )
-
-        conn.commit()
-        return "Admin account created or password reset successfully."
-
-    finally:
-        conn.close()
 
 
 @app.route("/")
