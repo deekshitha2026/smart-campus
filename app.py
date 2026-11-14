@@ -14,6 +14,39 @@ app.secret_key=os.environ.get("SECRET_KEY", "local-development-only-key")
 
 create_database()
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
+        password = request.form["password"]
+
+        conn = sqlite3.connect("attendance.db")
+
+        user = conn.execute(
+            "SELECT id, name, email, password, role FROM users WHERE LOWER(TRIM(email)) = ?",
+            (email,)
+        ).fetchone()
+
+        conn.close()
+
+        if user and check_password_hash(user[3], password):
+            session["user_id"] = user[0]
+            session["role"] = user[4]
+
+            flash("Login successful!")
+
+            if user[4] == "admin":
+                return redirect(url_for("admin_dashboard"))
+            elif user[4] == "teacher":
+                return redirect(url_for("teacher_dashboard"))
+            else:
+                return redirect(url_for("student_dashboard"))
+
+        flash("Invalid email or password!")
+
+    return render_template("login.html")
+
+
 @app.route("/temporary-admin-setup", methods=["GET", "POST"])
 def temporary_admin_setup():
     setup_token = os.environ.get("ADMIN_SETUP_TOKEN")
@@ -122,71 +155,6 @@ def register():
 
 
 
-def register():
-    if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = generate_password_hash(request.form["password"])
-        role = request.form["role"]
-        teacher_code = request.form.get("teacher_code", "")
-
-        if role == "teacher" and teacher_code != "TEACHER2026":
-            flash("Invalid teacher registration code!")
-            return render_template("register.html")
-
-        conn = sqlite3.connect("attendance.db")
-
-        try:
-            conn.execute(
-                "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-                (name, email, password, role)
-            )
-            conn.commit()
-            flash("Registration successful!")
-            return redirect(url_for("login"))
-
-        except sqlite3.IntegrityError:
-            flash("Email already exists!")
-
-        finally:
-            conn.close()
-
-    return render_template("register.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form["email"].strip().lower()
-        password = request.form["password"]
-
-        conn = sqlite3.connect("attendance.db")
-
-        user = conn.execute(
-            "SELECT * FROM users WHERE LOWER(TRIM(email)) = ?",
-            (email,)
-        ).fetchone()
-
-        conn.close()
-
-        if user and check_password_hash(user[3], password):
-            session["user_id"] = user[0]
-            session["role"] = user[4]
-
-            flash("Login successful!")
-
-            if user[4] == "admin":
-                return redirect(url_for("admin_dashboard"))
-
-            elif user[4] == "teacher":
-                return redirect(url_for("teacher_dashboard"))
-
-            else:
-                return redirect(url_for("student_dashboard"))
-
-        flash("Invalid email or password!")
-
-    return render_template("login.html")
 
 
 @app.route("/logout")
