@@ -153,16 +153,20 @@ def register():
 
     return render_template("register.html")
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form["email"]
+        email = request.form["email"].strip().lower()
         password = request.form["password"]
 
         conn = sqlite3.connect("attendance.db")
+
         user = conn.execute(
-            "SELECT * FROM users WHERE email = ?", (email,)
+            "SELECT * FROM users WHERE LOWER(TRIM(email)) = ?",
+            (email,)
         ).fetchone()
+
         conn.close()
 
         if user and check_password_hash(user[3], password):
