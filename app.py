@@ -1,6 +1,6 @@
 from flask import Flask, render_template,request,redirect,url_for,flash,session,send_file
 from werkzeug.security import generate_password_hash,check_password_hash
-import sqlite3
+import db as sqlite3
 import os
 import hmac
 from database import create_database
@@ -630,7 +630,7 @@ def teacher_analytics():
 
     monthly_records = conn.execute("""
         SELECT
-            strftime('%Y-%m', date),
+            TO_CHAR(date::date, 'YYYY-MM')
             COUNT(*),
             SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END)
         FROM attendance
