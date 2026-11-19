@@ -1060,7 +1060,7 @@ def manage_subjects():
         flash("Access denied! Teachers only.")
         return redirect(url_for("student_dashboard"))
 
-    conn = sqlite3.connect("attendance.db")
+    conn = sqlite3.connect()
 
     if request.method == "POST":
         subject_name = request.form.get("subject_name", "").strip()
@@ -1078,6 +1078,7 @@ def manage_subjects():
                 flash("Subject added successfully!")
 
             except sqlite3.IntegrityError:
+                conn.rollback()
                 flash("You have already added this subject.")
 
     subjects = conn.execute("""
