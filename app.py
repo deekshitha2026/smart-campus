@@ -629,16 +629,15 @@ def teacher_analytics():
     ).fetchone()[0]
 
     monthly_records = conn.execute("""
-        SELECT
-            TO_CHAR(date::date, 'YYYY-MM')
-            COUNT(*),
-            SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END)
-        FROM attendance
-        WHERE subject_id IS NOT NULL
-        GROUP BY strftime('%Y-%m', date)
-        ORDER BY strftime('%Y-%m', date)
+    SELECT
+        TO_CHAR(date::date, 'YYYY-MM') AS month,
+        COUNT(*),
+        SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END)
+    FROM attendance
+    WHERE subject_id IS NOT NULL
+    GROUP BY TO_CHAR(date::date, 'YYYY-MM')
+    ORDER BY TO_CHAR(date::date, 'YYYY-MM')
     """).fetchall()
-
     conn.close()
 
     student_names = []
