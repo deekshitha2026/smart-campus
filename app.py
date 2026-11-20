@@ -413,6 +413,7 @@ def update_activity(activity_id):
 
     flash("Activity marked as completed!")
     return redirect(url_for("activities"))
+
 @app.route("/delete-activity/<int:activity_id>", methods=["POST"])
 def delete_activity(activity_id):
     if "user_id" not in session:
@@ -422,18 +423,31 @@ def delete_activity(activity_id):
         flash("Only teachers can delete activities!")
         return redirect(url_for("activities"))
 
-    conn = sqlite3.connect("attendance.db")
+    conn = sqlite3.connect()
 
-    conn.execute(
-        "DELETE FROM activities WHERE id = ?",
-        (activity_id,)
-    )
+    try:
+        conn.execute(
+            "DELETE FROM student_activities WHERE activity_id = ?",
+            (activity_id,)
+        )
 
-    conn.commit()
-    conn.close()
+        conn.execute(
+            "DELETE FROM activities WHERE id = ?",
+            (activity_id,)
+        )
 
-    flash("Activity deleted successfully!")
+        conn.commit()
+        flash("Activity deleted successfully!")
+
+    except Exception:
+        conn.rollback()
+        flash("Unable to delete activity. Please try again.")
+
+    finally:
+        conn.close()
+
     return redirect(url_for("activities"))
+
 
 @app.route("/download-student-report/<int:student_id>")
 def download_student_report(student_id):
@@ -637,6 +651,7 @@ def teacher_analytics():
     WHERE subject_id IS NOT NULL
     GROUP BY TO_CHAR(date::date, 'YYYY-MM')
     ORDER BY TO_CHAR(date::date, 'YYYY-MM')
+    
     """).fetchall()
     conn.close()
 
